@@ -138,9 +138,10 @@ class ObservationsCfg:
         
         joint_pos = ObsTerm(func=mdp.joint_pos_rel)
         joint_vel = ObsTerm(func=mdp.joint_vel_rel)
-        eef_pos = ObsTerm(func=mdp.ee_frame_pos)
-        eef_quat = ObsTerm(func=mdp.ee_frame_quat)
-        gripper_pos = ObsTerm(func=mdp.gripper_pos)
+        
+        #eef_pos = ObsTerm(func=mdp.ee_frame_pos)
+        #eef_quat = ObsTerm(func=mdp.ee_frame_quat)
+        #gripper_pos = ObsTerm(func=mdp.gripper_pos)
 
         actions = ObsTerm(func=mdp.last_action)
 
@@ -150,7 +151,8 @@ class ObservationsCfg:
         #cube_orientations = ObsTerm(func=mdp.cube_orientations_inf_world_frame)
 
         #obserwacje dla 1 kostki 
-        object_position = ObsTerm(func=mdp.object_position_in_robot_root_frame)
+        #object_position = ObsTerm(func=mdp.object_position_in_robot_root_frame)
+
 
         def __post_init__(self) -> None:
             self.enable_corruption = False #szum dla obserwacji
@@ -225,11 +227,11 @@ class TerminationsCfg:
                                            )
 
     # (3) Uderzenie robota w stól
-    robot_collision = DoneTerm(func = mdp.joint_effort_out_of_limit,
-                               params = {
-                                   "asset_cfg": SceneEntityCfg("cube_1"),
-                               },
-                            ) 
+    #robot_collision = DoneTerm(func = mdp.joint_effort_out_of_limit,
+    #                           params = {
+    #                               "asset_cfg": SceneEntityCfg("robot", joint_names=["panda_joint.*"]),
+    #                           },
+    #                        ) 
 
     
 
