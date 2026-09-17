@@ -20,6 +20,7 @@ from isaaclab.assets import RigidObjectCfg
 from isaaclab.sim.schemas.schemas_cfg import RigidBodyPropertiesCfg
 from isaaclab.sim.spawners.from_files.from_files_cfg import UsdFileCfg
 from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
+import torch
 
 from . import mdp
 
@@ -134,13 +135,26 @@ class ObservationsCfg:
     class PolicyCfg(ObsGroup):
         """Observations for policy group."""
 
-        # observation terms (order preserved)
-        joint_pos_rel = ObsTerm(func=mdp.joint_pos_rel)
-        joint_vel_rel = ObsTerm(func=mdp.joint_vel_rel)
+        
+        joint_pos = ObsTerm(func=mdp.joint_pos_rel)
+        joint_vel = ObsTerm(func=mdp.joint_vel_rel)
+        eef_pos = ObsTerm(func=mdp.ee_frame_pos)
+        eef_quat = ObsTerm(func=mdp.ee_frame_quat)
+        gripper_pos = ObsTerm(func=mdp.gripper_pos)
+
+        actions = ObsTerm(func=mdp.last_action)
+
+        # obserwacje pod 3 kostki 
+        #object = ObsTerm(func=mdp.object_pos)
+        #cube_positions = ObsTerm(func=mdp.cube_positions_in_world_frame)
+        #cube_orientations = ObsTerm(func=mdp.cube_orientations_inf_world_frame)
+
+        #obserwacje dla 1 kostki 
+        object_position = ObsTerm(func=mdp.object_position_in_robot_root_frame)
 
         def __post_init__(self) -> None:
-            self.enable_corruption = False
-            self.concatenate_terms = True
+            self.enable_corruption = False #szum dla obserwacji
+            self.concatenate_terms = True # jeden duzy tensor 
 
     # observation groups
     policy: PolicyCfg = PolicyCfg()
@@ -150,14 +164,49 @@ class ObservationsCfg:
 class EventCfg:
     """Configuration for events."""
 
-  
+  # rand joints, rand cube position, 
+
+    reset_all = EventTerm(func = mdp.reset_scene_to_default,
+                          mode = "reset")
+
+    randomize_franka_joint_state = EventTerm(
+        func = mdp.reset_joints_by_offset,
+        mode = "reset",
+      params={
+            "position_range": (-0.3, 0.3),  
+            "velocity_range": (0.0, 0.0),    
+            "asset_cfg": SceneEntityCfg("robot"),
+        },
+    )
+
+    randomize_cube1_pos = EventTerm(
+        func = mdp.reset_root_state_uniform,
+        mode = "reset",
+        params = {
+            "pose_range": {
+                "x": (-0.2,0.2),
+                "y": (-0.2,0.2),
+                "z": (0,0),
+                "roll": (0,0),
+                "pitch": (0,0),
+                "yaw": (-math.pi,math.pi),
+                
+            },
+            "velocity_range": {},
+            "asset_cfg": SceneEntityCfg("cube_1"),
+        },
+    )
 
 
 @configclass
 class RewardsCfg:
     """Reward terms for the MDP."""
 
-   
+   # (1) reaching_reward 
+
+   #(2) grasping_reward
+
+   #(3) lifting_reward
 
 
 @configclass
@@ -166,6 +215,18 @@ class TerminationsCfg:
 
     # (1) Time out
     time_out = DoneTerm(func=mdp.time_out, time_out=True)
+
+    # (2) Klocek zostaje upuszczony lub zrzucony ze stołu
+    cube_1_height_below_minimum = DoneTerm(func = mdp.root_height_below_minimum,
+                                           params = {
+                                               "minimum_height": 0.52,
+                                               "asset_cfg": SceneEntityCfg("cube_1"),
+                                           },
+                                           )
+
+    # (3) Uderzenie robota w stól
+    robot_collision = DoneTerm(func = mdp.joint_effort_out_of_limit,) 
+
     
 
 
@@ -191,7 +252,7 @@ class PracaInzynierskaSkEnvCfg(ManagerBasedRLEnvCfg):
         """Post initialization."""
         # general settings
         self.decimation = 2
-        self.episode_length_s = 5
+        self.episode_length_s = 10
         # viewer settings
         self.viewer.eye = (8.0, 0.0, 5.0)
         # simulation settings
