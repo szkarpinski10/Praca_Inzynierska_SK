@@ -1,1 +1,0 @@
-git clone https://github.com/szkarpinski10/Praca_Inzynierska_SK.git .
