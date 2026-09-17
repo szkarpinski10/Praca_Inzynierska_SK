@@ -225,7 +225,11 @@ class TerminationsCfg:
                                            )
 
     # (3) Uderzenie robota w stól
-    robot_collision = DoneTerm(func = mdp.joint_effort_out_of_limit,) 
+    robot_collision = DoneTerm(func = mdp.joint_effort_out_of_limit,
+                               params = {
+                                   "asset_cfg": SceneEntityCfg("cube_1"),
+                               },
+                            ) 
 
     
 
