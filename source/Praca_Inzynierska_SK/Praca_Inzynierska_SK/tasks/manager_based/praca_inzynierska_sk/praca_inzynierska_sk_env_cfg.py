@@ -23,6 +23,7 @@ from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
 import torch
 
 from . import mdp
+from isaaclab_tasks.manager_based.manipulation.stack import mdp
 
 ##
 # Pre-defined configs
@@ -166,11 +167,11 @@ class ObservationsCfg:
 class EventCfg:
     """Configuration for events."""
 
-  # rand joints, rand cube position, 
-
+    # (1) reset scenuy
     reset_all = EventTerm(func = mdp.reset_scene_to_default,
                           mode = "reset")
 
+    #(2) losowe ułożenie robota na start 
     randomize_franka_joint_state = EventTerm(
         func = mdp.reset_joints_by_offset,
         mode = "reset",
@@ -181,6 +182,7 @@ class EventCfg:
         },
     )
 
+    # (3) losowe położenie kostki 
     randomize_cube1_pos = EventTerm(
         func = mdp.reset_root_state_uniform,
         mode = "reset",
@@ -204,11 +206,30 @@ class EventCfg:
 class RewardsCfg:
     """Reward terms for the MDP."""
 
-   # (1) reaching_reward 
+   # (1) reaching_reward
+    reach = RewTerm(
+        func=mdp.reach_reward,
+        params={"robot_cfg": SceneEntityCfg("robot"), "ee_frame_cfg": SceneEntityCfg("ee_frame"), "object_cfg": SceneEntityCfg("cube_1"), "constant": 7.0},
+        weight=1.0,
 
-   #(2) grasping_reward
+    )
 
-   #(3) lifting_reward
+
+    #(2) grasp reward
+    grasp = RewTerm(
+        func=mdp.grasp_reward,
+        params={"robot_cfg": SceneEntityCfg("robot"), "ee_frame_cfg": SceneEntityCfg("ee_frame"), "object_cfg": SceneEntityCfg("cube_1"), "object_grasped_reward": 1.0},
+        weight=5.0,
+    )
+
+    #(3) lift reward 
+    lift = RewTerm(
+        func=mdp.lift_reward,
+        params={"object_cfg": SceneEntityCfg("cube_1"), "min_height": 0.63},
+        weight=15.0,
+    ) 
+
+
 
 
 @configclass
@@ -218,7 +239,7 @@ class TerminationsCfg:
     # (1) Time out
     time_out = DoneTerm(func=mdp.time_out, time_out=True)
 
-    # (2) Klocek zostaje upuszczony lub zrzucony ze stołu
+    # (2) Klocek zrzucony ze stołu 
     cube_1_height_below_minimum = DoneTerm(func = mdp.root_height_below_minimum,
                                            params = {
                                                "minimum_height": 0.52,
@@ -227,11 +248,28 @@ class TerminationsCfg:
                                            )
 
     # (3) Uderzenie robota w stól
+<<<<<<< HEAD
     #robot_collision = DoneTerm(func = mdp.joint_effort_out_of_limit,
     #                           params = {
     #                               "asset_cfg": SceneEntityCfg("robot", joint_names=["panda_joint.*"]),
     #                           },
     #                        ) 
+=======
+    robot_collision = DoneTerm(func = mdp.joint_effort_out_of_limit,
+                               params = {
+                                   "asset_cfg": SceneEntityCfg("robot"),
+                               },
+                            ) 
+>>>>>>> 438a677 (dodanie reward)
+
+    # (4) Sukces - podniesienie klocka 10 cm nad stół 
+    cube_lifted = DoneTerm(
+        func=mdp.root_height_above_minimum,
+        params={
+            "minimum_height": 0.63,
+            "asset_cfg": SceneEntityCfg("cube_1"),
+        },
+    )
 
     
 
