@@ -254,13 +254,6 @@ class TerminationsCfg:
     #                               "asset_cfg": SceneEntityCfg("robot", joint_names=["panda_joint.*"]),
     #                           },
     #                        ) 
-=======
-    robot_collision = DoneTerm(func = mdp.joint_effort_out_of_limit,
-                               params = {
-                                   "asset_cfg": SceneEntityCfg("robot"),
-                               },
-                            ) 
->>>>>>> 438a677 (dodanie reward)
 
     # (4) Sukces - podniesienie klocka 10 cm nad stół 
     cube_lifted = DoneTerm(
