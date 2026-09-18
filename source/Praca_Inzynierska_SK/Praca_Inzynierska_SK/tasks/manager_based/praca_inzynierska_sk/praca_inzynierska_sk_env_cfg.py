@@ -248,12 +248,13 @@ class TerminationsCfg:
                                            )
 
     # (3) Uderzenie robota w stól
-<<<<<<< HEAD
-    #robot_collision = DoneTerm(func = mdp.joint_effort_out_of_limit,
-    #                           params = {
-    #                               "asset_cfg": SceneEntityCfg("robot", joint_names=["panda_joint.*"]),
-    #                           },
-    #                        ) 
+
+    robot_collision = DoneTerm(func = mdp.joint_effort_out_of_limit,
+                              params = {
+                                   "asset_cfg": SceneEntityCfg("robot", joint_names=["panda_joint.*"]),
+                               },
+                            ) 
+
 
     # (4) Sukces - podniesienie klocka 10 cm nad stół 
     cube_lifted = DoneTerm(
